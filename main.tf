@@ -1,42 +1,77 @@
-provider "aws" {
-  region  = "eu-west-1"
-  profile = "default"
-}
-
-data "aws_ami" "latest_amazon_linux" {
-  most_recent = true
-  owners = ["amazon"]
-
-  filter {
-    name = "name"
-    values = ["al2023-ami-2023.11.20260406.2-kernel-6.18-x86_64"]
-  }
-}
-
-output "latest_amazon_linux_ami_id" {
-  value = data.aws_ami.latest_amazon_linux.id
+locals {
+  resource_name = "${var.name_prefix}-server"
 }
 
 resource "aws_instance" "server" {
-  # ami         = "ami-040e10ddbaf780d2f" 
-  ami           = data.aws_ami.latest_amazon_linux.id
-  instance_type = "t3.micro"
+  count         = var.instance_count
+  ami           = data.aws_ami.ubuntu_ami.id
+  instance_type = var.instance_type
 
-   vpc_security_group_ids = [aws_security_group.server_sg.id]
+  user_data = file("${path.module}/cloudconfig.yml")
+
+  vpc_security_group_ids = [aws_security_group.server_sg.id]
 
   tags = {
-    Name = "sarah-terraform-server"
+    Name      = "${local.resource_name}-${count.index + 1}"
     ManagedBy = "Terraform"
   }
 }
+
+
 resource "aws_security_group" "server_sg" {
-  name = "sarah-sg"
-  description = "Ingress rule for SSH" 
+  name        = "${var.name_prefix}-sg"
+  description = "Ingress rules for SSH and containers"
+
+  tags = {
+    Name      = "${local.resource_name}-sg"
+    ManagedBy = "Terraform"
+  }
 }
-resource "aws_vpc_security_group_ingress_rule" "allow_ssh" { 
+
+resource "aws_vpc_security_group_ingress_rule" "allow_ssh" {
   security_group_id = aws_security_group.server_sg.id
-  cidr_ipv4 = "0.0.0.0/0" 
-  from_port = 22 
-  ip_protocol = "tcp" 
-  to_port = 22 
+  cidr_ipv4         = "0.0.0.0/0"
+  from_port         = 22
+  ip_protocol       = "tcp"
+  to_port           = 22
+
+  tags = {
+    Name      = "For SSH"
+  }
+}
+
+resource "aws_vpc_security_group_ingress_rule" "allow_dozzle" {
+  security_group_id = aws_security_group.server_sg.id
+  cidr_ipv4         = "0.0.0.0/0"
+  from_port         = 8080
+  ip_protocol       = "tcp"
+  to_port           = 8080
+
+  tags = {
+    Name      = "For Dozzle"
+  }
+}
+
+resource "aws_vpc_security_group_ingress_rule" "allow_filebrowser" {
+  security_group_id = aws_security_group.server_sg.id
+  cidr_ipv4         = "0.0.0.0/0"
+  from_port         = 8090
+  ip_protocol       = "tcp"
+  to_port           = 8090
+
+  tags = {
+    Name      = "For Filebrowser"
+  }
+}
+
+resource "aws_vpc_security_group_ingress_rule" "allow_flame" {
+  security_group_id = aws_security_group.server_sg.id
+  cidr_ipv4         = "0.0.0.0/0"
+  from_port         = 5005
+  ip_protocol       = "tcp"
+  to_port           = 5005
+
+  tags = {
+    Name      = "For Flame"
+  }
 }

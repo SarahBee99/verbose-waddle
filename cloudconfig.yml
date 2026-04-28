@@ -1,0 +1,36 @@
+#cloud-config
+
+# Update the system
+package_update: true
+package_upgrade: true
+
+# Install necessary packages
+packages:
+  - docker
+  - git
+
+# Configure groups so the ec2-user can run docker commands without sudo 
+groups:
+  - docker
+system_info:
+  default_user:
+    groups: 
+      - docker
+
+# Run the setup commands 
+runcmd:
+  # Start and enable the Docker engine
+  - systemctl start docker
+  - systemctl enable docker
+  
+  # Clone the blueprint from GitHub
+  - git clone https://github.com/SarahBee99/tf-ec2-docker.git /opt/app
+  
+  # Deploy the apps
+  - cd /opt/app 
+  - docker compose up --detach
+
+# Final message to the logs to confirm it's done 
+final_message: "The system is up, Docker is running, and the apps are deployed!"
+
+
