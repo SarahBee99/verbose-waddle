@@ -7,7 +7,7 @@ resource "aws_instance" "server" {
   ami           = data.aws_ami.ubuntu_ami.id
   instance_type = var.instance_type
 
-  user_data = file("${path.module}/cloudconfig.yml")
+  user_data = file("${path.module}/userdata.sh")
 
   vpc_security_group_ids = [aws_security_group.server_sg.id]
 
