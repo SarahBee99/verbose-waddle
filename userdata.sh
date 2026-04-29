@@ -1,15 +1,15 @@
 #!/bin/bash
 
 # 1. Update and Install Docker/Git
-apt-get update -y
-apt-get install -y docker.io docker-compose-v2 git
+sudo apt-get update -y
+sudo apt-get install -y docker.io docker-compose-v2 git
 
 # 2. Start Docker service
-systemctl start docker
-systemctl enable docker
+sudo systemctl start docker
+sudo systemctl enable docker
 
 # 3. Fix permissions so you don't need 'sudo' for docker commands
-usermod -aG docker ubuntu
+sudo usermod -aG docker "$USER"
 
 # 4. Clone your project
 mkdir -p /opt/app
