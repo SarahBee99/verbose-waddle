@@ -13,7 +13,7 @@ usermod -aG docker ubuntu
 
 # 4. Clone your project
 mkdir -p /opt/app
-git clone https://github.com/tamkeen-cloud-engineering/tf-ec2-docker.git /opt/app
+git clone https://github.com/SarahBee99/tf-ec2-docker.git /opt/app
 
 # 5. Deploy the app
 cd /opt/app
